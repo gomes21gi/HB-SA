@@ -6,14 +6,13 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const path = require('path')
-app.use('/assets', express.static('assets'))
-app.use('/images', express.static('images'))
-app.use('/pages', express.static('pages'))
+
+app.use(express.static('public'));
 
 const connection = mysql.createConnection({
   host: '127.0.0.1',
   user: 'root',
-  password: 'root',
+  password: '',
   database: 'healthbox',
 });
 
@@ -42,9 +41,10 @@ app.post('/Pag.login', (req, res) => {
 
         if (rows[0].senha_usuario === senha) {
           res.send('Login com Sucesso!!!');
-        } else {
-          res.send('Senha incorreta');
-        }
+        res.sendFile(__dirname + '/Páginas/index.html')
+            } else {
+             res.send('Senha incorreta');
+            }
 
       } else {
         res.send('Login Falhou - Email não cadastrado');
@@ -59,28 +59,27 @@ app.post('/Pag.login', (req, res) => {
 
 
 app.get('/cadastro', (req, res) => {
-  res.sendFile(__dirname + '/pages/cadastro.html')
+  res.sendFile(__dirname + '/Páginas/cadastro.html')
 })
 
 app.post('/cadastro', (req, res) => {
+  let nome = req.body.nome;
   let email = req.body.email;
   let senha = req.body.senha;
+  let data = req.body.data;
+  let telefone = req.body.telefone;
 
-  connection.query("insert * FROM usuario where email_usuario = '" + email + "'", function (err, rows, fields) {
+    connection.query( "INSERT INTO `user`(`nome`, `email`, `senha`, `data`,`telefone`) VALUES  ('" + nome + "','" + email + "','" + senha + "','" + data + "','" + telefone + "')", function (err, rows, fields) {
     console.log("Results:", rows);
     if (!err) {
       if (rows.length > 0) {
 
         if (rows[0].senha_usuario === senha) {
           res.send('Login com Sucesso!!!');
-
-
-
-
+          res.sendFile(__dirname + '/Páginas/login.html')
         } else {
           res.send('Senha incorreta');
         }
-
       } else {
         res.send('Login Falhou - Email não cadastrado');
       }
@@ -91,7 +90,18 @@ app.post('/cadastro', (req, res) => {
   });
 });
 
-
+  
+  connection.query( "INSERT INTO `user`(`nome`, `sobrenome`, `cpf`, `email`,`senha`) VALUES  ('" + nome + "','" + sobrenome + "','" + cpf + "','" + email + "','" + password + "')", function (err, rows, fields) {
+    console.log("Results:", rows);
+    if (!err) {
+      console.log("Cadastro feito com sucesso!!");
+      res.sendFile(__dirname + '/public/login.html')
+    } else {
+      console.log("Erro: Consulta não realizada", err);
+      res.send('Login failed');
+    }
+  });
+});
 
 app.listen(3000, () => {
   console.log('Servidor rodando na porta 3000!')
